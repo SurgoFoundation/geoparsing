@@ -3,18 +3,16 @@ import os
 import json
 import PyPDF2
 from geoparserIO import parseWithGeoparser
+from googleNLP import parseWithGoogle
 from bs4 import BeautifulSoup
 import re
 import pandas as pd
-
-# set directory (outside of repo) that contains data. Includes NLTK stopwords and masses of PDFs, for example.
-data_dir = os.path.join('/home', 'peter', 'data')
 
 
 def load_stopwords():
     """ Loads NLTK stopwords """
     import nltk
-    nltk_dir = os.path.join(data_dir, 'nltk')
+    nltk_dir = 'nltk'
     if nltk_dir not in nltk.data.path:
         nltk.data.path.append(nltk_dir)
     nltk.download('stopwords')
@@ -28,7 +26,7 @@ class annotateFile(object):
 
     """
 
-    def __init__(self, file_path = os.path.join(data_dir, 'Surgo', 'usaid_evaluation_example.pdf')):
+    def __init__(self, file_path = 'usaid_evaluation_example.pdf'):
         self.file_path = file_path
         _, self.file_extension = os.path.splitext(self.file_path)
 

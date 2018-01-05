@@ -9,14 +9,14 @@ from google.cloud.language import types
 # Try it out by opening Python and typing
 # from geoparse_documents import annotateFile; f=annotateFile(); from googleNLP import parseWithGoogle; parseWithGoogle(f.pdf_words_clean[0:10000], print_input=True, print_output=True)
 
-def parseWithGoogle(text, print_output=False, print_input=False, flatten=True):
+def parseWithGoogle(text, print_output=False, print_input=False):
     """ Makes request to Google Cloud and returns a df
 
     Input
         text            String. Do not pass lists, dictionaries, etc. Basic strings only.
 
     Returns
-        Pandas dataframe with each extracted feature
+        Pandas dataframe with each extracted location
     """
     client = language.LanguageServiceClient()
 
@@ -28,9 +28,6 @@ def parseWithGoogle(text, print_output=False, print_input=False, flatten=True):
         content=text,
         type=enums.Document.Type.PLAIN_TEXT)
 
-    # Detects entities in the document. You can also analyze HTML with:
-    #   document.type == enums.Document.Type.HTML
-    # PS: HOW DO I ONLY REQUEST LOCATIONS?
     entities = client.analyze_entities(document).entities
 
     # entity types from enums.Entity.Type
@@ -46,10 +43,18 @@ def parseWithGoogle(text, print_output=False, print_input=False, flatten=True):
             print(u'{:<16}: {}'.format('wikipedia_url',
                   entity.metadata.get('wikipedia_url', '-')))
 
-    if flatten:
-        df = _flatten_into_df(entities)
-    else:
-        df = pd.DataFrame(entities)
+    # Convert output to a pandas dataframe
+    df = pd.DataFrame(data=None, index=range(0, len(entities)), columns=['name', 'entity_type', 'salience', 'wikipedia_url', 'google_knowledge_graph'])
+    for ix, entity in enumerate(entities):
+        df.loc[ix] = [
+        entity.name, 
+        entity_type[entity.type], 
+        entity.salience, 
+        entity.metadata.get('wikipedia_url', None),
+        entity.metadata.get('mid', None)]
+
+    # Only return location entities
+    df = df[df.entity_type == 'LOCATION']
     return df
 
 
